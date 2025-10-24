@@ -1,0 +1,77 @@
+# 환경변수 파일 (보안 중요!)
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# API 키 및 인증 파일
+*.key
+*.pem
+credentials.json
+config.secret.json
+secrets.json
+
+# 의존성
+node_modules/
+.pnpm-store/
+.yarn/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 빌드 결과물
+dist/
+build/
+.next/
+.nuxt/
+.cache/
+out/
+*.min.js
+*.min.css
+
+# 로그 파일
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# 에디터 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 테스트 커버리지
+coverage/
+.nyc_output/
+
+# 임시 파일
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# OS 관련
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# 백업 파일
+*.bak
+*.backup
+backup/
+
+# 개발 중 생성되는 파일
+test-files/
+demo-files/
+sample-data/
