@@ -444,9 +444,32 @@
 
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
+                .then(async registration => {
                     console.log('✅ 서비스워커 등록 성공');
-                    useServiceWorker = true;
+
+                    // Service Worker가 활성화되고 페이지를 제어할 때까지 대기
+                    if (navigator.serviceWorker.controller) {
+                        console.log('✅ 서비스워커가 이미 페이지를 제어 중');
+                        useServiceWorker = true;
+                    } else {
+                        console.log('⏳ 서비스워커 활성화 대기 중...');
+                        // controllerchange 이벤트 대기
+                        await new Promise((resolve) => {
+                            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                                console.log('✅ 서비스워커가 페이지 제어 시작');
+                                useServiceWorker = true;
+                                resolve();
+                            });
+
+                            // 5초 후에도 controller가 없으면 포기
+                            setTimeout(() => {
+                                if (!navigator.serviceWorker.controller) {
+                                    console.log('⚠️ 서비스워커 제어 타임아웃 - 기본 모드 사용');
+                                }
+                                resolve();
+                            }, 5000);
+                        });
+                    }
 
                     navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
 
