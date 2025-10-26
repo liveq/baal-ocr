@@ -350,6 +350,14 @@
                 <label class="result-label">
                     <span data-ko="📝 추출된 텍스트" data-en="📝 Extracted Text">📝 추출된 텍스트</span>
                 </label>
+
+                <!-- 개별/전체 보기 탭 -->
+                <div id="resultTabs" style="display: none; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="result-tab active" data-view="all" style="padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600;">
+                        <span data-ko="전체 보기" data-en="View All">전체 보기</span>
+                    </button>
+                </div>
+
                 <textarea id="resultText" class="result-text" readonly></textarea>
                 <div class="result-stats" id="resultStats"></div>
                 <div class="result-buttons">
@@ -380,7 +388,18 @@
     <!-- 공통 스크립트 -->
     <script src="_common/common.js"></script>
     <script>
-        // 페이지 로드 시 스크롤 맨 위로 & 입력값 초기화
+        // 강제로 스크롤 맨 위로 (즉시 실행)
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
+        // 페이지 로드 시에도 다시 한번
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
+        });
+
+        // DOMContentLoaded에도
         document.addEventListener('DOMContentLoaded', () => {
             window.scrollTo(0, 0);
 
@@ -416,9 +435,28 @@
 
             uploadedFiles = Array.from(files);
             displayFileList();
+            showFirstImagePreview();
 
             document.getElementById('fileListSection').style.display = 'block';
             document.getElementById('placeholder').style.display = 'none';
+        }
+
+        function showFirstImagePreview() {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '';
+
+            // 첫 번째 이미지 파일 찾기
+            const firstImage = uploadedFiles.find(f => f.type.startsWith('image/'));
+            if (!firstImage) {
+                container.innerHTML = '<p class="preview-placeholder">이미지 미리보기를 사용할 수 없습니다.</p>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                container.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
+            };
+            reader.readAsDataURL(firstImage);
         }
 
         function displayFileList() {
@@ -571,12 +609,51 @@
             const container = document.getElementById('previewContainer');
             container.innerHTML = '';
 
+            // 개별 파일 탭 생성 (2개 이상일 때만)
+            const tabsDiv = document.getElementById('resultTabs');
+            tabsDiv.innerHTML = '';
+
+            if (extractedTexts.length > 1) {
+                tabsDiv.style.display = 'flex';
+
+                // 전체 보기 버튼
+                const allBtn = document.createElement('button');
+                allBtn.className = 'result-tab active';
+                allBtn.dataset.view = 'all';
+                allBtn.style.cssText = 'padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600;';
+                allBtn.textContent = '전체 보기';
+                allBtn.onclick = () => showAllText();
+                tabsDiv.appendChild(allBtn);
+
+                // 개별 파일 버튼
+                extractedTexts.forEach((item, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'result-tab';
+                    btn.dataset.view = index;
+                    btn.style.cssText = 'padding: 8px 16px; background: var(--bg-accent); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer;';
+                    btn.textContent = item.filename;
+                    btn.onclick = () => showIndividualText(index);
+                    tabsDiv.appendChild(btn);
+                });
+            } else {
+                tabsDiv.style.display = 'none';
+            }
+
+            // 전체 텍스트 표시
+            showAllText();
+
+            document.getElementById('resultSection').style.display = 'block';
+
+            // 스크롤
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function showAllText() {
             let allText = '';
             extractedTexts.forEach(({ filename, text }) => {
                 allText += `\n\n========== ${filename} ==========\n\n${text}`;
             });
 
-            document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultText').value = allText.trim();
 
             // 통계 정보
@@ -591,8 +668,47 @@
 
             document.getElementById('resultStats').textContent = statsText;
 
-            // 스크롤
-            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // 탭 활성화 상태 변경
+            document.querySelectorAll('.result-tab').forEach(btn => btn.classList.remove('active'));
+            const allBtn = document.querySelector('.result-tab[data-view="all"]');
+            if (allBtn) {
+                allBtn.classList.add('active');
+                allBtn.style.background = 'var(--gold-gradient)';
+                allBtn.style.color = 'white';
+                allBtn.style.border = 'none';
+            }
+        }
+
+        function showIndividualText(index) {
+            const item = extractedTexts[index];
+            document.getElementById('resultText').value = item.text;
+
+            // 통계 정보
+            const charCount = item.text.length;
+            const wordCount = item.text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const lineCount = item.text.split('\n').length;
+
+            const currentLang = document.body.getAttribute('data-lang') || 'ko';
+            const statsText = currentLang === 'ko'
+                ? `파일: ${item.filename} | 단어: ${wordCount}개 | 문자: ${charCount}개 | 줄: ${lineCount}개`
+                : `File: ${item.filename} | Words: ${wordCount} | Characters: ${charCount} | Lines: ${lineCount}`;
+
+            document.getElementById('resultStats').textContent = statsText;
+
+            // 탭 활성화 상태 변경
+            document.querySelectorAll('.result-tab').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = 'var(--bg-accent)';
+                btn.style.color = 'var(--text-primary)';
+                btn.style.border = '1px solid var(--border-color)';
+            });
+            const activeBtn = document.querySelector(`.result-tab[data-view="${index}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.background = 'var(--gold-gradient)';
+                activeBtn.style.color = 'white';
+                activeBtn.style.border = 'none';
+            }
         }
 
         // 텍스트 복사
