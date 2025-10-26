@@ -343,17 +343,33 @@
 
             <!-- PDF 페이지 썸네일 네비게이션 -->
             <div id="pdfNavigation" style="display: none; margin-top: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <button id="prevPageBtn" class="nav-btn" style="padding: 8px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer;">
-                        <span data-ko="← 이전" data-en="← Prev">← 이전</span>
-                    </button>
-                    <span id="pageInfo" style="flex: 1; text-align: center; font-weight: 600;"></span>
-                    <button id="nextPageBtn" class="nav-btn" style="padding: 8px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer;">
-                        <span data-ko="다음 →" data-en="Next →">다음 →</span>
-                    </button>
-                    <button id="downloadPageBtn" class="btn-download" style="padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600;">
-                        <span data-ko="📥 이미지 저장" data-en="📥 Save Image">📥 이미지 저장</span>
-                    </button>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                    <!-- 좌우 네비게이션 그룹 (가깝게) -->
+                    <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-secondary); padding: 4px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                        <button id="prevPageBtn" class="nav-btn" style="padding: 8px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                            <span data-ko="←" data-en="←">←</span>
+                        </button>
+                        <span id="pageInfo" style="font-weight: 700; color: var(--text-primary); font-size: 14px; min-width: 60px; text-align: center;"></span>
+                        <button id="nextPageBtn" class="nav-btn" style="padding: 8px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                            <span data-ko="→" data-en="→">→</span>
+                        </button>
+                    </div>
+
+                    <!-- 다운로드 버튼 그룹 -->
+                    <div style="position: relative; margin-left: auto;">
+                        <button id="downloadPageBtn" class="btn-download" style="padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                            <span data-ko="📥 이미지 저장" data-en="📥 Save Image">📥 이미지 저장</span>
+                        </button>
+                        <!-- 호버 시 표시되는 옵션 메뉴 -->
+                        <div id="downloadOptions" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 140px;">
+                            <button id="downloadCurrentBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; border-bottom: 1px solid var(--border-color); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;">
+                                <span data-ko="📄 개별 저장" data-en="📄 Current">📄 개별 저장</span>
+                            </button>
+                            <button id="downloadAllBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);">
+                                <span data-ko="📚 전체 저장" data-en="📚 All Pages">📚 전체 저장</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <!-- 썸네일 리스트 -->
                 <div id="thumbnailList" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; background: var(--bg-secondary); border-radius: var(--border-radius-md); padding: 10px;"></div>
@@ -567,20 +583,93 @@
         }
 
         // PDF 네비게이션 버튼 이벤트
-        document.getElementById('prevPageBtn').addEventListener('click', () => {
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+
+        prevPageBtn.addEventListener('click', () => {
             if (currentPageIndex > 0) {
                 showPDFPage(currentPageIndex - 1);
             }
         });
 
-        document.getElementById('nextPageBtn').addEventListener('click', () => {
+        nextPageBtn.addEventListener('click', () => {
             if (currentPageIndex < pdfPages.length - 1) {
                 showPDFPage(currentPageIndex + 1);
             }
         });
 
-        // 현재 페이지 이미지 다운로드
-        document.getElementById('downloadPageBtn').addEventListener('click', () => {
+        // 네비게이션 버튼 호버 효과
+        prevPageBtn.addEventListener('mouseenter', () => {
+            prevPageBtn.style.background = 'var(--gold-gradient)';
+            prevPageBtn.style.color = 'white';
+            prevPageBtn.style.borderColor = 'var(--gold-primary)';
+        });
+        prevPageBtn.addEventListener('mouseleave', () => {
+            prevPageBtn.style.background = 'white';
+            prevPageBtn.style.color = 'var(--text-primary)';
+            prevPageBtn.style.borderColor = 'var(--border-color)';
+        });
+        nextPageBtn.addEventListener('mouseenter', () => {
+            nextPageBtn.style.background = 'var(--gold-gradient)';
+            nextPageBtn.style.color = 'white';
+            nextPageBtn.style.borderColor = 'var(--gold-primary)';
+        });
+        nextPageBtn.addEventListener('mouseleave', () => {
+            nextPageBtn.style.background = 'white';
+            nextPageBtn.style.color = 'var(--text-primary)';
+            nextPageBtn.style.borderColor = 'var(--border-color)';
+        });
+
+        // 다운로드 버튼 호버 메뉴
+        const downloadPageBtn = document.getElementById('downloadPageBtn');
+        const downloadOptions = document.getElementById('downloadOptions');
+        const downloadCurrentBtn = document.getElementById('downloadCurrentBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+
+        let hideMenuTimeout;
+
+        // 호버 시 메뉴 표시
+        downloadPageBtn.addEventListener('mouseenter', () => {
+            clearTimeout(hideMenuTimeout);
+            downloadOptions.style.display = 'block';
+        });
+
+        // 메뉴에서 마우스 나가면 약간의 딜레이 후 숨김
+        downloadPageBtn.parentElement.addEventListener('mouseleave', () => {
+            hideMenuTimeout = setTimeout(() => {
+                downloadOptions.style.display = 'none';
+            }, 200);
+        });
+
+        // 메뉴 호버 시 숨김 취소
+        downloadOptions.addEventListener('mouseenter', () => {
+            clearTimeout(hideMenuTimeout);
+        });
+
+        // 메인 버튼 클릭 - 개별 저장 (성질 급한 사람용)
+        downloadPageBtn.addEventListener('click', (e) => {
+            if (pdfPages.length === 0 || currentPageIndex < 0) return;
+
+            // 메뉴 표시 중이 아니면 바로 개별 저장
+            if (downloadOptions.style.display === 'none') {
+                downloadCurrentPage();
+            }
+        });
+
+        // 개별 저장 버튼
+        downloadCurrentBtn.addEventListener('click', () => {
+            downloadCurrentPage();
+            downloadOptions.style.display = 'none';
+        });
+
+        // 전체 저장 버튼
+        downloadAllBtn.addEventListener('click', () => {
+            downloadAllPages();
+            downloadOptions.style.display = 'none';
+        });
+
+        // 개별 페이지 다운로드 함수
+        function downloadCurrentPage() {
             if (pdfPages.length === 0 || currentPageIndex < 0) return;
 
             const page = pdfPages[currentPageIndex];
@@ -590,6 +679,40 @@
             link.click();
 
             window.BaalUtils.showToast(`페이지 ${page.pageNum} 이미지 저장 완료`, 'success', 3000);
+        }
+
+        // 전체 페이지 다운로드 함수
+        async function downloadAllPages() {
+            if (pdfPages.length === 0) return;
+
+            window.BaalUtils.showToast(`${pdfPages.length}개 페이지 다운로드 시작...`, 'info', 3000);
+
+            for (let i = 0; i < pdfPages.length; i++) {
+                const page = pdfPages[i];
+                const link = document.createElement('a');
+                link.href = page.dataUrl;
+                link.download = `page-${page.pageNum}.jpg`;
+                link.click();
+
+                // 브라우저가 다운로드를 처리할 시간 확보
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            window.BaalUtils.showToast(`${pdfPages.length}개 페이지 저장 완료`, 'success', 5000);
+        }
+
+        // 버튼 호버 효과 추가
+        downloadCurrentBtn.addEventListener('mouseenter', (e) => {
+            e.target.style.background = 'var(--bg-accent)';
+        });
+        downloadCurrentBtn.addEventListener('mouseleave', (e) => {
+            e.target.style.background = 'white';
+        });
+        downloadAllBtn.addEventListener('mouseenter', (e) => {
+            e.target.style.background = 'var(--bg-accent)';
+        });
+        downloadAllBtn.addEventListener('mouseleave', (e) => {
+            e.target.style.background = 'white';
         });
 
         // 중단 버튼
