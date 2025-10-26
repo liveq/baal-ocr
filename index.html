@@ -405,6 +405,16 @@
             });
         });
 
+        // Service Worker unregister (Web Worker로 전환)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                    console.log('[Cleanup] Service Worker unregistered');
+                });
+            });
+        }
+
         let selectedLang = 'kor+eng';
         let uploadedFiles = [];
         let extractedTexts = [];
@@ -445,14 +455,8 @@
                         break;
 
                     case 'COMPLETE':
-                        // 모든 작업 완료
-                        extractedTexts = data.results;
-
-                        document.getElementById('progressContainer').style.display = 'none';
-                        document.getElementById('startBtn').disabled = false;
-
-                        displayResults();
-                        window.BaalUtils.showToast(`${extractedTexts.length}개 파일 텍스트 추출 완료!`, 'success', 5000);
+                        // COMPLETE 메시지는 processImageWithWorker에서 처리
+                        // 전역 핸들러에서는 무시 (중복 방지)
                         break;
 
                     case 'ERROR':
