@@ -854,6 +854,14 @@
             const thumbnailList = document.getElementById('thumbnailList');
             thumbnailList.innerHTML = '';
 
+            // 썸네일 개수가 적으면 중앙 정렬, 많으면 왼쪽 정렬
+            const shouldCenterAlign = pdfPages.length <= 5;
+            if (shouldCenterAlign) {
+                thumbnailList.style.justifyContent = 'center';
+            } else {
+                thumbnailList.style.justifyContent = 'flex-start';
+            }
+
             pdfPages.forEach((page, index) => {
                 const thumbnail = document.createElement('div');
                 thumbnail.setAttribute('data-page-index', index);
@@ -892,8 +900,10 @@
                 thumbnailList.appendChild(thumbnail);
             });
 
-            // 선택된 썸네일을 중앙으로 스크롤
-            scrollThumbnailToCenter(currentPageIndex);
+            // 썸네일이 많을 때만 선택된 썸네일을 중앙으로 스크롤
+            if (!shouldCenterAlign) {
+                scrollThumbnailToCenter(currentPageIndex);
+            }
         }
 
         function displayFileList() {
