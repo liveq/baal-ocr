@@ -294,7 +294,8 @@
                     <span data-ko="🌐 인식 언어 선택" data-en="🌐 Select Recognition Language">🌐 인식 언어 선택</span>
                 </label>
                 <div class="language-grid">
-                    <button class="language-btn active" data-lang="kor+eng" data-ko="한글+영어" data-en="Korean+English">한글+영어</button>
+                    <button class="language-btn active" data-lang="auto" data-ko="자동 감지" data-en="Auto Detect">자동 감지</button>
+                    <button class="language-btn" data-lang="kor+eng" data-ko="한글+영어" data-en="Korean+English">한글+영어</button>
                     <button class="language-btn" data-lang="eng" data-ko="영어" data-en="English">영어</button>
                     <button class="language-btn" data-lang="jpn" data-ko="일본어" data-en="Japanese">일본어</button>
                     <button class="language-btn" data-lang="chi_sim" data-ko="중국어 간체" data-en="Chinese Simplified">중국어 간체</button>
@@ -369,7 +370,7 @@
             el.value = '';
         });
 
-        let selectedLang = 'kor+eng';
+        let selectedLang = 'auto';
         let extractedText = '';
 
         // 언어 선택
