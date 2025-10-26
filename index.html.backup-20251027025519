@@ -21,10 +21,6 @@
 
     <title>OCR 텍스트 추출 - BAAL</title>
 
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d4af37">
-
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2886185075996969"
      crossorigin="anonymous"></script>
@@ -341,49 +337,12 @@
                 <p class="preview-placeholder" id="placeholder" data-ko="파일을 업로드하고 시작 버튼을 눌러주세요" data-en="Upload files and click start button">파일을 업로드하고 시작 버튼을 눌러주세요</p>
             </div>
 
-            <!-- PDF 페이지 썸네일 네비게이션 -->
-            <div id="pdfNavigation" style="display: none; margin-top: 15px;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                    <!-- 좌우 네비게이션 그룹 (가깝게) -->
-                    <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-secondary); padding: 4px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
-                        <button id="prevPageBtn" class="nav-btn" style="padding: 8px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                            <span data-ko="←" data-en="←">←</span>
-                        </button>
-                        <span id="pageInfo" style="font-weight: 700; color: var(--text-primary); font-size: 14px; min-width: 60px; text-align: center;"></span>
-                        <button id="nextPageBtn" class="nav-btn" style="padding: 8px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                            <span data-ko="→" data-en="→">→</span>
-                        </button>
-                    </div>
-
-                    <!-- 다운로드 버튼 그룹 -->
-                    <div style="position: relative; margin-left: auto;">
-                        <button id="downloadPageBtn" class="btn-download" style="padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                            <span data-ko="📥 이미지 저장" data-en="📥 Save Image">📥 이미지 저장</span>
-                        </button>
-                        <!-- 호버 시 표시되는 옵션 메뉴 -->
-                        <div id="downloadOptions" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 140px;">
-                            <button id="downloadCurrentBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; border-bottom: 1px solid var(--border-color); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;">
-                                <span data-ko="📄 개별 저장" data-en="📄 Current">📄 개별 저장</span>
-                            </button>
-                            <button id="downloadAllBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);">
-                                <span data-ko="📚 전체 저장" data-en="📚 All Pages">📚 전체 저장</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <!-- 썸네일 리스트 -->
-                <div id="thumbnailList" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; background: var(--bg-secondary); border-radius: var(--border-radius-md); padding: 10px;"></div>
-            </div>
-
             <!-- 진행률 -->
             <div class="progress-container" id="progressContainer">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <p class="progress-text" id="progressText">처리 중...</p>
-                <button id="stopBtn" style="display: none; margin-top: 10px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600;">
-                    <span data-ko="⏹️ 작업 중단" data-en="⏹️ Stop">⏹️ 작업 중단</span>
-                </button>
             </div>
 
             <!-- 📝 추출된 텍스트 -->
@@ -397,14 +356,9 @@
 
                 <textarea id="resultText" class="result-text" readonly></textarea>
                 <div class="result-stats" id="resultStats"></div>
-                <div class="result-buttons" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
-                        <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
-                    </div>
-                    <button class="btn-reset" id="resetBtn" style="padding: 12px 20px; background: #dc3545; color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                        <span data-ko="🔄 처음부터" data-en="🔄 Reset">🔄 처음부터</span>
-                    </button>
+                <div class="result-buttons">
+                    <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
+                    <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
                 </div>
             </div>
         </main>
@@ -454,59 +408,73 @@
         let selectedLang = 'kor+eng';
         let uploadedFiles = [];
         let extractedTexts = [];
-        let pdfPages = []; // PDF의 모든 페이지 이미지
-        let currentPageIndex = 0;
-        let currentTasks = new Map(); // 진행 중인 작업들
-        let taskIdCounter = 0;
-
-        // Service Worker 언레지스터 (Web Worker로 전환)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                registrations.forEach(registration => {
-                    registration.unregister();
-                    console.log('[Cleanup] Service Worker unregistered');
-                });
-            });
-        }
 
         // Web Worker 초기화
         let ocrWorker = null;
+        let useWorker = true;
 
         try {
             ocrWorker = new Worker('ocr-worker.js');
-            console.log('✅ OCR Web Worker 초기화 완료');
+            console.log('✅ Worker 초기화 성공');
 
-            // Web Worker 메시지 핸들러
+            // Worker 메시지 핸들러
             ocrWorker.addEventListener('message', (event) => {
-                const { type, data } = event.data;
+                const { type, data, error } = event.data;
 
                 switch (type) {
+                    case 'PROGRESS':
+                        document.getElementById('progressText').textContent = `처리 중: ${data.current}/${data.total} - ${data.filename}`;
+                        break;
+
                     case 'OCR_PROGRESS':
                         if (data.progress) {
                             document.getElementById('progressFill').style.width = data.progress + '%';
                             document.getElementById('progressText').textContent = `처리 중: ${data.current}/${data.total} - ${data.filename} (${data.progress}%)`;
                         } else if (data.status === 'loading language data') {
                             document.getElementById('progressText').textContent = `언어 데이터 로딩 중... (${data.current}/${data.total})`;
+                        } else if (data.status === 'initializing') {
+                            document.getElementById('progressText').textContent = `Tesseract 초기화 중... (${data.current}/${data.total})`;
                         }
                         break;
 
+                    case 'PDF_PROGRESS':
+                        document.getElementById('progressText').textContent = `PDF 처리 중: ${data.current}/${data.total} - 페이지 ${data.page}/${data.totalPages}`;
+                        break;
+
+                    case 'FILE_COMPLETE':
+                        // 개별 파일 완료 (필요시 추가 처리)
+                        break;
+
                     case 'COMPLETE':
-                        // COMPLETE 메시지는 processImageWithWorker에서 처리
-                        // 전역 핸들러에서는 무시 (중복 방지)
+                        // 모든 작업 완료
+                        extractedTexts = data.results;
+
+                        document.getElementById('progressContainer').style.display = 'none';
+                        document.getElementById('startBtn').disabled = false;
+
+                        displayResults();
+                        window.BaalUtils.showToast(`${extractedTexts.length}개 파일 텍스트 추출 완료!`, 'success', 5000);
                         break;
 
                     case 'ERROR':
-                        console.error('[Worker] OCR 에러:', data.error);
+                        console.error('Worker 에러:', error);
+                        window.BaalUtils.showToast('처리 중 오류가 발생했습니다: ' + error, 'error', 5000);
+
+                        document.getElementById('progressContainer').style.display = 'none';
+                        document.getElementById('startBtn').disabled = false;
                         break;
                 }
             });
 
             ocrWorker.addEventListener('error', (error) => {
-                console.error('[Worker] 에러:', error);
+                console.error('Worker 오류:', error);
+                useWorker = false;
+                window.BaalUtils.showToast('Worker 오류가 발생했습니다. 기본 모드로 전환합니다.', 'warning', 5000);
             });
 
         } catch (error) {
-            console.error('❌ Web Worker 초기화 실패:', error);
+            console.error('Worker 초기화 실패:', error);
+            useWorker = false;
         }
 
         // 언어 선택
@@ -543,212 +511,41 @@
             document.getElementById('fileListSection').style.display = 'block';
         }
 
-        // PDF 네비게이션 버튼 이벤트
-        const prevPageBtn = document.getElementById('prevPageBtn');
-        const nextPageBtn = document.getElementById('nextPageBtn');
-
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPageIndex > 0) {
-                showPDFPage(currentPageIndex - 1);
-            }
-        });
-
-        nextPageBtn.addEventListener('click', () => {
-            if (currentPageIndex < pdfPages.length - 1) {
-                showPDFPage(currentPageIndex + 1);
-            }
-        });
-
-        // 네비게이션 버튼 호버 효과
-        prevPageBtn.addEventListener('mouseenter', () => {
-            prevPageBtn.style.background = 'var(--gold-gradient)';
-            prevPageBtn.style.color = 'white';
-            prevPageBtn.style.borderColor = 'var(--gold-primary)';
-        });
-        prevPageBtn.addEventListener('mouseleave', () => {
-            prevPageBtn.style.background = 'white';
-            prevPageBtn.style.color = 'var(--text-primary)';
-            prevPageBtn.style.borderColor = 'var(--border-color)';
-        });
-        nextPageBtn.addEventListener('mouseenter', () => {
-            nextPageBtn.style.background = 'var(--gold-gradient)';
-            nextPageBtn.style.color = 'white';
-            nextPageBtn.style.borderColor = 'var(--gold-primary)';
-        });
-        nextPageBtn.addEventListener('mouseleave', () => {
-            nextPageBtn.style.background = 'white';
-            nextPageBtn.style.color = 'var(--text-primary)';
-            nextPageBtn.style.borderColor = 'var(--border-color)';
-        });
-
-        // 다운로드 버튼 호버 메뉴
-        const downloadPageBtn = document.getElementById('downloadPageBtn');
-        const downloadOptions = document.getElementById('downloadOptions');
-        const downloadCurrentBtn = document.getElementById('downloadCurrentBtn');
-        const downloadAllBtn = document.getElementById('downloadAllBtn');
-
-        let hideMenuTimeout;
-
-        // 호버 시 메뉴 표시
-        downloadPageBtn.addEventListener('mouseenter', () => {
-            clearTimeout(hideMenuTimeout);
-            downloadOptions.style.display = 'block';
-        });
-
-        // 메뉴에서 마우스 나가면 약간의 딜레이 후 숨김
-        downloadPageBtn.parentElement.addEventListener('mouseleave', () => {
-            hideMenuTimeout = setTimeout(() => {
-                downloadOptions.style.display = 'none';
-            }, 200);
-        });
-
-        // 메뉴 호버 시 숨김 취소
-        downloadOptions.addEventListener('mouseenter', () => {
-            clearTimeout(hideMenuTimeout);
-        });
-
-        // 메인 버튼 클릭 - 개별 저장 (성질 급한 사람용)
-        downloadPageBtn.addEventListener('click', (e) => {
-            if (pdfPages.length === 0 || currentPageIndex < 0) return;
-
-            // 메뉴 표시 중이 아니면 바로 개별 저장
-            if (downloadOptions.style.display === 'none') {
-                downloadCurrentPage();
-            }
-        });
-
-        // 개별 저장 버튼
-        downloadCurrentBtn.addEventListener('click', () => {
-            downloadCurrentPage();
-            downloadOptions.style.display = 'none';
-        });
-
-        // 전체 저장 버튼
-        downloadAllBtn.addEventListener('click', () => {
-            downloadAllPages();
-            downloadOptions.style.display = 'none';
-        });
-
-        // 개별 페이지 다운로드 함수
-        function downloadCurrentPage() {
-            if (pdfPages.length === 0 || currentPageIndex < 0) return;
-
-            const page = pdfPages[currentPageIndex];
-            const link = document.createElement('a');
-            link.href = page.dataUrl;
-            link.download = `page-${page.pageNum}.jpg`;
-            link.click();
-
-            window.BaalUtils.showToast(`페이지 ${page.pageNum} 이미지 저장 완료`, 'success', 3000);
-        }
-
-        // 전체 페이지 다운로드 함수
-        async function downloadAllPages() {
-            if (pdfPages.length === 0) return;
-
-            window.BaalUtils.showToast(`${pdfPages.length}개 페이지 다운로드 시작...`, 'info', 3000);
-
-            for (let i = 0; i < pdfPages.length; i++) {
-                const page = pdfPages[i];
-                const link = document.createElement('a');
-                link.href = page.dataUrl;
-                link.download = `page-${page.pageNum}.jpg`;
-                link.click();
-
-                // 브라우저가 다운로드를 처리할 시간 확보
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-
-            window.BaalUtils.showToast(`${pdfPages.length}개 페이지 저장 완료`, 'success', 5000);
-        }
-
-        // 버튼 호버 효과 추가
-        downloadCurrentBtn.addEventListener('mouseenter', (e) => {
-            e.target.style.background = 'var(--bg-accent)';
-        });
-        downloadCurrentBtn.addEventListener('mouseleave', (e) => {
-            e.target.style.background = 'white';
-        });
-        downloadAllBtn.addEventListener('mouseenter', (e) => {
-            e.target.style.background = 'var(--bg-accent)';
-        });
-        downloadAllBtn.addEventListener('mouseleave', (e) => {
-            e.target.style.background = 'white';
-        });
-
-        // 중단 버튼
-        document.getElementById('stopBtn').addEventListener('click', () => {
-            console.log('[Main] 작업 중단 요청');
-
-            // Web Worker 종료 및 재시작
-            if (ocrWorker) {
-                ocrWorker.terminate();
-                console.log('[Main] Web Worker 종료');
-
-                // Worker 재초기화
-                ocrWorker = new Worker('ocr-worker.js');
-                ocrWorker.addEventListener('message', (event) => {
-                    const { type, data } = event.data;
-                    switch (type) {
-                        case 'OCR_PROGRESS':
-                            if (data.progress) {
-                                document.getElementById('progressFill').style.width = data.progress + '%';
-                                document.getElementById('progressText').textContent = `처리 중: ${data.current}/${data.total} - ${data.filename} (${data.progress}%)`;
-                            } else if (data.status === 'loading language data') {
-                                document.getElementById('progressText').textContent = `언어 데이터 로딩 중... (${data.current}/${data.total})`;
-                            }
-                            break;
-                        case 'COMPLETE':
-                            break;
-                        case 'ERROR':
-                            console.error('[Worker] OCR 에러:', data.error);
-                            break;
-                    }
-                });
-            }
-
-            // 대기 중인 모든 Promise reject
-            currentTasks.forEach((task, taskId) => {
-                task.reject(new Error('사용자가 작업을 중단했습니다'));
-            });
-            currentTasks.clear();
-
-            // UI 초기화
-            document.getElementById('progressContainer').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'none';
-            document.getElementById('startBtn').disabled = false;
-
-            window.BaalUtils.showToast('작업이 중단되었습니다', 'warning', 3000);
-        });
-
         async function showFirstFilePreview() {
             const container = document.getElementById('previewContainer');
             container.innerHTML = '';
 
             if (uploadedFiles.length === 0) {
                 container.innerHTML = '<p class="preview-placeholder">파일을 업로드하고 시작 버튼을 눌러주세요</p>';
-                document.getElementById('pdfNavigation').style.display = 'none';
                 return;
             }
 
             const firstFile = uploadedFiles[0];
 
-            // PDF 파일인 경우 - 전체 페이지 처리
+            // PDF 파일인 경우
             if (firstFile.type === 'application/pdf') {
                 try {
-                    container.innerHTML = '<p class="preview-placeholder">PDF 로딩 중...</p>';
+                    container.innerHTML = '<p class="preview-placeholder">PDF 첫 페이지 로딩 중...</p>';
 
-                    await loadAllPDFPages(firstFile);
+                    const arrayBuffer = await firstFile.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: 1.5 });
 
-                    if (pdfPages.length > 0) {
-                        showPDFPage(0);
-                        document.getElementById('pdfNavigation').style.display = 'block';
-                        updatePDFNavigation();
-                    }
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.borderRadius = 'var(--border-radius-md)';
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
                 } catch (error) {
                     console.error('PDF 미리보기 오류:', error);
                     container.innerHTML = '<p class="preview-placeholder">PDF 미리보기를 표시할 수 없습니다.</p>';
-                    document.getElementById('pdfNavigation').style.display = 'none';
                 }
                 return;
             }
@@ -760,128 +557,10 @@
                     container.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
                 };
                 reader.readAsDataURL(firstFile);
-                document.getElementById('pdfNavigation').style.display = 'none';
                 return;
             }
 
             container.innerHTML = '<p class="preview-placeholder">미리보기를 지원하지 않는 파일 형식입니다.</p>';
-            document.getElementById('pdfNavigation').style.display = 'none';
-        }
-
-        // PDF의 모든 페이지를 이미지로 변환
-        async function loadAllPDFPages(file) {
-            pdfPages = [];
-            currentPageIndex = 0;
-
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const totalPages = pdf.numPages;
-
-            console.log(`PDF 전체 페이지 로드 시작: ${totalPages}페이지`);
-
-            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 2 }); // 고해상도
-
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d', { willReadFrequently: true });
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-                // Canvas를 Blob으로 변환
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-
-                pdfPages.push({
-                    pageNum,
-                    blob,
-                    canvas,
-                    dataUrl: await blobToDataURL(blob)
-                });
-
-                console.log(`페이지 ${pageNum}/${totalPages} 변환 완료`);
-            }
-
-            console.log('PDF 전체 페이지 로드 완료');
-        }
-
-        // Blob을 Data URL로 변환
-        function blobToDataURL(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        // 특정 PDF 페이지 표시
-        function showPDFPage(pageIndex) {
-            if (pageIndex < 0 || pageIndex >= pdfPages.length) return;
-
-            currentPageIndex = pageIndex;
-            const container = document.getElementById('previewContainer');
-            const page = pdfPages[pageIndex];
-
-            container.innerHTML = `<img src="${page.dataUrl}" alt="Page ${page.pageNum}" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
-
-            updatePDFNavigation();
-        }
-
-        // PDF 네비게이션 업데이트
-        function updatePDFNavigation() {
-            if (pdfPages.length === 0) return;
-
-            document.getElementById('pageInfo').textContent = `${currentPageIndex + 1} / ${pdfPages.length}`;
-            document.getElementById('prevPageBtn').disabled = currentPageIndex === 0;
-            document.getElementById('nextPageBtn').disabled = currentPageIndex === pdfPages.length - 1;
-
-            // 썸네일 리스트 업데이트
-            updateThumbnails();
-        }
-
-        // 썸네일 리스트 업데이트
-        function updateThumbnails() {
-            const thumbnailList = document.getElementById('thumbnailList');
-            thumbnailList.innerHTML = '';
-
-            pdfPages.forEach((page, index) => {
-                const thumbnail = document.createElement('div');
-                thumbnail.style.cssText = `
-                    position: relative;
-                    cursor: pointer;
-                    border: 3px solid ${index === currentPageIndex ? 'var(--gold-primary)' : 'var(--border-color)'};
-                    border-radius: var(--border-radius-sm);
-                    overflow: hidden;
-                    flex-shrink: 0;
-                    width: 120px;
-                    transition: all 0.2s;
-                `;
-
-                thumbnail.innerHTML = `
-                    <img src="${page.dataUrl}" style="width: 100%; display: block;">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; text-align: center; padding: 4px; font-size: 12px; font-weight: 600;">
-                        ${page.pageNum}
-                    </div>
-                `;
-
-                thumbnail.addEventListener('click', () => showPDFPage(index));
-                thumbnail.addEventListener('mouseenter', () => {
-                    if (index !== currentPageIndex) {
-                        thumbnail.style.borderColor = 'var(--gold-primary)';
-                        thumbnail.style.opacity = '0.8';
-                    }
-                });
-                thumbnail.addEventListener('mouseleave', () => {
-                    if (index !== currentPageIndex) {
-                        thumbnail.style.borderColor = 'var(--border-color)';
-                        thumbnail.style.opacity = '1';
-                    }
-                });
-
-                thumbnailList.appendChild(thumbnail);
-            });
         }
 
         function displayFileList() {
@@ -924,11 +603,10 @@
 
             extractedTexts = [];
             document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('stopBtn').style.display = 'block';
             document.getElementById('resultSection').style.display = 'none';
             document.getElementById('startBtn').disabled = true;
 
-            // 모든 파일 처리
+            // PDF와 이미지를 분리 처리 (PDF는 메인 스레드, 이미지는 Worker)
             for (let i = 0; i < uploadedFiles.length; i++) {
                 const file = uploadedFiles[i];
                 const fileNum = i + 1;
@@ -940,17 +618,12 @@
                     let text = '';
 
                     if (file.type === 'application/pdf') {
-                        // PDF: 이미 변환된 페이지들 사용
-                        if (pdfPages.length > 0) {
-                            console.log(`📄 PDF 페이지 OCR 처리 시작: ${pdfPages.length}페이지`);
-                            text = await processPDFPages(file.name, fileNum, totalFiles);
-                        } else {
-                            throw new Error('PDF 페이지 로드 실패');
-                        }
+                        // PDF는 항상 메인 스레드에서 처리 (PDF.js가 DOM 필요)
+                        text = await processPDF(file, fileNum, totalFiles);
                     } else {
-                        // 이미지: Web Worker 사용
-                        if (ocrWorker) {
-                            console.log('🔧 Web Worker로 이미지 처리:', file.name);
+                        // 이미지는 Worker 사용 (가능한 경우)
+                        if (useWorker && ocrWorker) {
+                            console.log('🔧 Worker로 이미지 처리:', file.name);
                             text = await processImageWithWorker(file, fileNum, totalFiles);
                         } else {
                             console.log('⚠️ 기본 방식으로 이미지 처리:', file.name);
@@ -974,7 +647,6 @@
 
             // 진행률 숨김
             document.getElementById('progressContainer').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'none';
             document.getElementById('startBtn').disabled = false;
 
             // 결과 표시
@@ -983,145 +655,40 @@
             window.BaalUtils.showToast(`${uploadedFiles.length}개 파일 텍스트 추출 완료!`, 'success', 5000);
         });
 
-        // Web Worker로 이미지 처리
+        // Worker로 이미지 처리
         async function processImageWithWorker(file, fileNum, totalFiles) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // ArrayBuffer 변환
-                    const arrayBuffer = await file.arrayBuffer();
+            return new Promise((resolve, reject) => {
+                const arrayBuffer = file.arrayBuffer();
 
-                    // Worker 메시지 핸들러 (일회성)
-                    const handleMessage = (event) => {
-                        const { type, data } = event.data;
+                // Worker에 단일 이미지 전송
+                const messageHandler = (event) => {
+                    const { type, data, error } = event.data;
 
-                        if (type === 'COMPLETE') {
-                            ocrWorker.removeEventListener('message', handleMessage);
-                            resolve(data.text);
-                        } else if (type === 'ERROR') {
-                            ocrWorker.removeEventListener('message', handleMessage);
-                            reject(new Error(data.error || 'OCR processing failed'));
-                        }
-                    };
+                    if (type === 'COMPLETE') {
+                        ocrWorker.removeEventListener('message', messageHandler);
+                        resolve(data.results[0].text);
+                    } else if (type === 'ERROR') {
+                        ocrWorker.removeEventListener('message', messageHandler);
+                        reject(new Error(error));
+                    }
+                };
 
-                    ocrWorker.addEventListener('message', handleMessage);
+                ocrWorker.addEventListener('message', messageHandler);
 
-                    // Web Worker에 전송
+                arrayBuffer.then(buffer => {
                     ocrWorker.postMessage({
-                        type: 'PROCESS_IMAGE',
+                        type: 'PROCESS_FILES',
                         data: {
-                            imageData: {
-                                buffer: arrayBuffer,
-                                type: file.type
-                            },
-                            language: selectedLang,
-                            filename: file.name,
-                            fileIndex: fileNum,
-                            totalFiles: totalFiles
+                            files: [{
+                                name: file.name,
+                                type: file.type,
+                                arrayBuffer: buffer
+                            }],
+                            language: selectedLang
                         }
                     });
-
-                    console.log(`[Main] Web Worker에 전송: ${file.name}`);
-
-                } catch (error) {
-                    reject(error);
-                }
+                });
             });
-        }
-
-        // PDF 페이지들 OCR 처리 (이미 변환된 이미지 사용)
-        async function processPDFPages(filename, fileNum, totalFiles) {
-            let fullText = '';
-
-            for (let i = 0; i < pdfPages.length; i++) {
-                const page = pdfPages[i];
-                const pageNum = page.pageNum;
-
-                document.getElementById('progressText').textContent =
-                    `PDF 처리 중: ${fileNum}/${totalFiles} - 페이지 ${pageNum}/${pdfPages.length}`;
-
-                try {
-                    let pageText = '';
-
-                    // Web Worker 사용
-                    if (ocrWorker) {
-                        pageText = await processPageWithWorker(page, pageNum, pdfPages.length);
-                    } else {
-                        // 기본 방식
-                        pageText = await processPageDirectly(page.blob);
-                    }
-
-                    fullText += `\n\n=== 페이지 ${pageNum} ===\n\n${pageText}`;
-
-                    console.log(`페이지 ${pageNum}/${pdfPages.length} OCR 완료`);
-
-                } catch (error) {
-                    console.error(`페이지 ${pageNum} OCR 에러:`, error);
-                    fullText += `\n\n=== 페이지 ${pageNum} ===\n\n[오류: ${error.message}]`;
-                }
-            }
-
-            return fullText.trim();
-        }
-
-        // PDF 페이지를 Web Worker로 처리
-        async function processPageWithWorker(page, pageNum, totalPages) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // Blob을 ArrayBuffer로 변환
-                    const arrayBuffer = await page.blob.arrayBuffer();
-
-                    // Worker 메시지 핸들러 (일회성)
-                    const handleMessage = (event) => {
-                        const { type, data } = event.data;
-
-                        if (type === 'COMPLETE') {
-                            ocrWorker.removeEventListener('message', handleMessage);
-                            resolve(data.text);
-                        } else if (type === 'ERROR') {
-                            ocrWorker.removeEventListener('message', handleMessage);
-                            reject(new Error(data.error || 'OCR processing failed'));
-                        }
-                    };
-
-                    ocrWorker.addEventListener('message', handleMessage);
-
-                    // Web Worker에 전송
-                    ocrWorker.postMessage({
-                        type: 'PROCESS_IMAGE',
-                        data: {
-                            imageData: {
-                                buffer: arrayBuffer,
-                                type: 'image/jpeg'
-                            },
-                            language: selectedLang,
-                            filename: `Page ${pageNum}`,
-                            fileIndex: pageNum,
-                            totalFiles: totalPages
-                        }
-                    });
-
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        }
-
-        // PDF 페이지를 직접 처리 (Web Worker 미사용 시)
-        async function processPageDirectly(blob) {
-            const { data } = await Tesseract.recognize(
-                blob,
-                selectedLang,
-                {
-                    logger: (m) => {
-                        if (m.status === 'recognizing text') {
-                            const progress = Math.round(m.progress * 100);
-                            document.getElementById('progressFill').style.width = progress + '%';
-                        }
-                    }
-                }
-            );
-
-            return data.text;
         }
 
         async function processImage(file, fileNum, totalFiles) {
@@ -1146,6 +713,44 @@
             return data.text;
         }
 
+        async function processPDF(file, fileNum, totalFiles) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                document.getElementById('progressText').textContent = `PDF 처리 중: ${fileNum}/${totalFiles} - 페이지 ${pageNum}/${pdf.numPages}`;
+
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2 });
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+                const { data } = await Tesseract.recognize(
+                    blob,
+                    selectedLang,
+                    {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                const progress = Math.round(m.progress * 100);
+                                document.getElementById('progressFill').style.width = progress + '%';
+                            }
+                        }
+                    }
+                );
+
+                fullText += `\n\n=== 페이지 ${pageNum} ===\n\n${data.text}`;
+            }
+
+            return fullText.trim();
+        }
 
         function displayResults() {
             // 미리보기는 유지 (지우지 않음)
@@ -1268,41 +873,6 @@
             const blob = new Blob([allText], { type: 'text/plain;charset=utf-8' });
             window.BaalUtils.downloadFile(blob, 'extracted-text.txt');
             window.BaalUtils.showToast('TXT 다운로드 완료!', 'success', 5000);
-        });
-
-        // 초기화 버튼
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            // 확인 대화상자
-            if (!confirm('모든 파일과 결과를 초기화하시겠습니까?')) {
-                return;
-            }
-
-            // 업로드된 파일 초기화
-            uploadedFiles = [];
-            extractedTexts = [];
-            pdfPages = [];
-            currentPageIndex = 0;
-
-            // UI 초기화
-            document.getElementById('fileListSection').style.display = 'none';
-            document.getElementById('previewContainer').innerHTML = '<p class="preview-placeholder">파일을 업로드하고 시작 버튼을 눌러주세요</p>';
-            document.getElementById('pdfNavigation').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'none';
-            document.getElementById('placeholder').style.display = 'block';
-            document.getElementById('fileInput').value = '';
-
-            window.BaalUtils.showToast('초기화 완료! 새로운 파일을 업로드해주세요.', 'success', 5000);
-        });
-
-        // 초기화 버튼 호버 효과
-        const resetBtn = document.getElementById('resetBtn');
-        resetBtn.addEventListener('mouseenter', () => {
-            resetBtn.style.background = '#bb2d3b';
-            resetBtn.style.transform = 'scale(1.05)';
-        });
-        resetBtn.addEventListener('mouseleave', () => {
-            resetBtn.style.background = '#dc3545';
-            resetBtn.style.transform = 'scale(1)';
         });
     </script>
 </body>

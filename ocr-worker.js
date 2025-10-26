@@ -17,8 +17,8 @@ self.addEventListener('message', async (event) => {
     const { type, data } = event.data;
 
     try {
-        if (type === 'PROCESS_FILES') {
-            await processFiles(data);
+        if (type === 'PROCESS_IMAGE') {
+            await processImage(data);
         }
     } catch (error) {
         self.postMessage({
@@ -28,146 +28,21 @@ self.addEventListener('message', async (event) => {
     }
 });
 
-async function processFiles({ files, language }) {
-    const results = [];
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileNum = i + 1;
-        const totalFiles = files.length;
-
-        try {
-            // 진행 상태 전송
-            self.postMessage({
-                type: 'PROGRESS',
-                data: {
-                    current: fileNum,
-                    total: totalFiles,
-                    filename: file.name,
-                    status: 'processing'
-                }
-            });
-
-            let text = '';
-
-            if (file.type === 'application/pdf') {
-                // PDF 처리
-                text = await processPDF(file, fileNum, totalFiles, language);
-            } else {
-                // 이미지 처리
-                text = await processImage(file, fileNum, totalFiles, language);
-            }
-
-            results.push({
-                filename: file.name,
-                text: text
-            });
-
-            // 개별 파일 완료 알림
-            self.postMessage({
-                type: 'FILE_COMPLETE',
-                data: {
-                    current: fileNum,
-                    total: totalFiles,
-                    filename: file.name
-                }
-            });
-
-        } catch (error) {
-            console.error(`Error processing ${file.name}:`, error);
-            results.push({
-                filename: file.name,
-                text: `[오류: ${error.message}]`
-            });
-        }
-    }
-
-    // 전체 완료
-    self.postMessage({
-        type: 'COMPLETE',
-        data: {
-            results: results
-        }
-    });
-}
-
-async function processImage(file, fileNum, totalFiles, language) {
-    // ArrayBuffer를 Blob으로 변환
-    const blob = new Blob([file.arrayBuffer], { type: file.type });
-
-    const { data } = await Tesseract.recognize(
-        blob,
-        language,
-        {
-            logger: (m) => {
-                if (m.status === 'recognizing text') {
-                    const progress = Math.round(m.progress * 100);
-                    self.postMessage({
-                        type: 'OCR_PROGRESS',
-                        data: {
-                            current: fileNum,
-                            total: totalFiles,
-                            filename: file.name,
-                            progress: progress,
-                            status: 'recognizing text'
-                        }
-                    });
-                } else if (m.status === 'loading language traineddata') {
-                    self.postMessage({
-                        type: 'OCR_PROGRESS',
-                        data: {
-                            current: fileNum,
-                            total: totalFiles,
-                            filename: file.name,
-                            status: 'loading language data'
-                        }
-                    });
-                } else if (m.status === 'initializing tesseract') {
-                    self.postMessage({
-                        type: 'OCR_PROGRESS',
-                        data: {
-                            current: fileNum,
-                            total: totalFiles,
-                            filename: file.name,
-                            status: 'initializing'
-                        }
-                    });
-                }
-            }
-        }
-    );
-
-    return data.text;
-}
-
-async function processPDF(file, fileNum, totalFiles, language) {
-    const arrayBuffer = file.arrayBuffer;
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+async function processImage({ imageData, language, filename, fileIndex, totalFiles }) {
+    try {
+        // 진행 상태 전송
         self.postMessage({
-            type: 'PDF_PROGRESS',
+            type: 'PROGRESS',
             data: {
-                current: fileNum,
+                current: fileIndex,
                 total: totalFiles,
-                filename: file.name,
-                page: pageNum,
-                totalPages: pdf.numPages
+                filename: filename,
+                status: 'processing'
             }
         });
 
-        const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2 });
-
-        // OffscreenCanvas 사용 (Worker에서 Canvas 사용)
-        const canvas = new OffscreenCanvas(viewport.width, viewport.height);
-        const context = canvas.getContext('2d', { willReadFrequently: true });
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-        // Canvas를 Blob으로 변환
-        const blob = await canvas.convertToBlob({ type: 'image/png' });
+        // ArrayBuffer를 Blob으로 변환
+        const blob = new Blob([imageData.buffer], { type: imageData.type });
 
         const { data } = await Tesseract.recognize(
             blob,
@@ -179,12 +54,31 @@ async function processPDF(file, fileNum, totalFiles, language) {
                         self.postMessage({
                             type: 'OCR_PROGRESS',
                             data: {
-                                current: fileNum,
+                                current: fileIndex,
                                 total: totalFiles,
-                                filename: file.name,
-                                page: pageNum,
-                                totalPages: pdf.numPages,
-                                progress: progress
+                                filename: filename,
+                                progress: progress,
+                                status: 'recognizing text'
+                            }
+                        });
+                    } else if (m.status === 'loading language traineddata') {
+                        self.postMessage({
+                            type: 'OCR_PROGRESS',
+                            data: {
+                                current: fileIndex,
+                                total: totalFiles,
+                                filename: filename,
+                                status: 'loading language data'
+                            }
+                        });
+                    } else if (m.status === 'initializing tesseract') {
+                        self.postMessage({
+                            type: 'OCR_PROGRESS',
+                            data: {
+                                current: fileIndex,
+                                total: totalFiles,
+                                filename: filename,
+                                status: 'initializing'
                             }
                         });
                     }
@@ -192,8 +86,25 @@ async function processPDF(file, fileNum, totalFiles, language) {
             }
         );
 
-        fullText += `\n\n=== 페이지 ${pageNum} ===\n\n${data.text}`;
-    }
+        // 완료
+        self.postMessage({
+            type: 'COMPLETE',
+            data: {
+                filename: filename,
+                text: data.text,
+                fileIndex: fileIndex,
+                totalFiles: totalFiles
+            }
+        });
 
-    return fullText.trim();
+    } catch (error) {
+        console.error(`Error processing ${filename}:`, error);
+        self.postMessage({
+            type: 'ERROR',
+            data: {
+                filename: filename,
+                error: error.message
+            }
+        });
+    }
 }
