@@ -434,29 +434,69 @@
             if (files.length === 0) return;
 
             uploadedFiles = Array.from(files);
+
+            // placeholder 먼저 숨김
+            const placeholder = document.getElementById('placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
             displayFileList();
-            showFirstImagePreview();
+            showFirstFilePreview();
 
             document.getElementById('fileListSection').style.display = 'block';
-            document.getElementById('placeholder').style.display = 'none';
         }
 
-        function showFirstImagePreview() {
+        async function showFirstFilePreview() {
             const container = document.getElementById('previewContainer');
             container.innerHTML = '';
 
-            // 첫 번째 이미지 파일 찾기
-            const firstImage = uploadedFiles.find(f => f.type.startsWith('image/'));
-            if (!firstImage) {
-                container.innerHTML = '<p class="preview-placeholder">이미지 미리보기를 사용할 수 없습니다.</p>';
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = '<p class="preview-placeholder">파일을 업로드하고 시작 버튼을 눌러주세요</p>';
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                container.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
-            };
-            reader.readAsDataURL(firstImage);
+            const firstFile = uploadedFiles[0];
+
+            // PDF 파일인 경우
+            if (firstFile.type === 'application/pdf') {
+                try {
+                    container.innerHTML = '<p class="preview-placeholder">PDF 첫 페이지 로딩 중...</p>';
+
+                    const arrayBuffer = await firstFile.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: 1.5 });
+
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.borderRadius = 'var(--border-radius-md)';
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+                } catch (error) {
+                    console.error('PDF 미리보기 오류:', error);
+                    container.innerHTML = '<p class="preview-placeholder">PDF 미리보기를 표시할 수 없습니다.</p>';
+                }
+                return;
+            }
+
+            // 이미지 파일인 경우
+            if (firstFile.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    container.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
+                };
+                reader.readAsDataURL(firstFile);
+                return;
+            }
+
+            container.innerHTML = '<p class="preview-placeholder">미리보기를 지원하지 않는 파일 형식입니다.</p>';
         }
 
         function displayFileList() {
@@ -578,7 +618,7 @@
                 const viewport = page.getViewport({ scale: 2 });
 
                 const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
+                const context = canvas.getContext('2d', { willReadFrequently: true });
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
 
