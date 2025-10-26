@@ -361,8 +361,13 @@
     <!-- 공통 스크립트 -->
     <script src="_common/common.js"></script>
     <script>
-        // 페이지 로드 시 스크롤 맨 위로
+        // 페이지 로드 시 스크롤 맨 위로 & 입력값 초기화
         window.scrollTo(0, 0);
+
+        // 입력값 초기화 (새로고침 시)
+        document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => {
+            el.value = '';
+        });
 
         let selectedLang = 'kor+eng';
         let extractedText = '';
