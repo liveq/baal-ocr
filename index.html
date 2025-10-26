@@ -397,9 +397,14 @@
 
                 <textarea id="resultText" class="result-text" readonly></textarea>
                 <div class="result-stats" id="resultStats"></div>
-                <div class="result-buttons">
-                    <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
-                    <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
+                <div class="result-buttons" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
+                        <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
+                    </div>
+                    <button class="btn-reset" id="resetBtn" style="padding: 12px 20px; background: #dc3545; color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                        <span data-ko="🔄 처음부터" data-en="🔄 Reset">🔄 처음부터</span>
+                    </button>
                 </div>
             </div>
         </main>
@@ -454,98 +459,54 @@
         let currentTasks = new Map(); // 진행 중인 작업들
         let taskIdCounter = 0;
 
-        // 서비스워커 등록
-        let serviceWorker = null;
-        let useServiceWorker = false;
-
-        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-            navigator.serviceWorker.register('/sw.js')
-                .then(async registration => {
-                    console.log('✅ 서비스워커 등록 성공');
-
-                    // Service Worker가 활성화되고 페이지를 제어할 때까지 대기
-                    if (navigator.serviceWorker.controller) {
-                        console.log('✅ 서비스워커가 이미 페이지를 제어 중');
-                        useServiceWorker = true;
-                    } else {
-                        console.log('⏳ 서비스워커 활성화 대기 중...');
-                        // controllerchange 이벤트 대기
-                        await new Promise((resolve) => {
-                            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                                console.log('✅ 서비스워커가 페이지 제어 시작');
-                                useServiceWorker = true;
-                                resolve();
-                            });
-
-                            // 5초 후에도 controller가 없으면 포기
-                            setTimeout(() => {
-                                if (!navigator.serviceWorker.controller) {
-                                    console.log('⚠️ 서비스워커 제어 타임아웃 - 기본 모드 사용');
-                                }
-                                resolve();
-                            }, 5000);
-                        });
-                    }
-
-                    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
-
-                    // 탭 닫힐 때 서비스워커에 알림
-                    window.addEventListener('beforeunload', () => {
-                        if (navigator.serviceWorker.controller) {
-                            navigator.serviceWorker.controller.postMessage({
-                                type: 'STOP_ALL_TASKS'
-                            });
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('❌ 서비스워커 등록 실패:', error);
-                    useServiceWorker = false;
+        // Service Worker 언레지스터 (Web Worker로 전환)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                    console.log('[Cleanup] Service Worker unregistered');
                 });
-        } else {
-            console.log('⚠️ HTTPS 환경이 아니거나 서비스워커를 지원하지 않습니다. 기본 모드로 실행합니다.');
+            });
         }
 
-        // 서비스워커 메시지 핸들러
-        function handleServiceWorkerMessage(event) {
-            const { type, data, taskId } = event.data;
+        // Web Worker 초기화
+        let ocrWorker = null;
 
-            console.log('[메인] 서비스워커 메시지:', type);
+        try {
+            ocrWorker = new Worker('ocr-worker.js');
+            console.log('✅ OCR Web Worker 초기화 완료');
 
-            switch (type) {
-                case 'OCR_PROGRESS':
-                    if (data.progress) {
-                        document.getElementById('progressFill').style.width = data.progress + '%';
-                        document.getElementById('progressText').textContent = `처리 중: ${data.fileIndex}/${data.totalFiles} - ${data.filename} (${data.progress}%)`;
-                    } else if (data.status === 'loading_language') {
-                        document.getElementById('progressText').textContent = `언어 데이터 로딩 중... (${data.fileIndex}/${data.totalFiles})`;
-                    }
-                    break;
+            // Web Worker 메시지 핸들러
+            ocrWorker.addEventListener('message', (event) => {
+                const { type, data } = event.data;
 
-                case 'IMAGE_COMPLETE':
-                    const task = currentTasks.get(taskId);
-                    if (task) {
-                        task.resolve(data.text);
-                        currentTasks.delete(taskId);
-                    }
-                    break;
+                switch (type) {
+                    case 'OCR_PROGRESS':
+                        if (data.progress) {
+                            document.getElementById('progressFill').style.width = data.progress + '%';
+                            document.getElementById('progressText').textContent = `처리 중: ${data.current}/${data.total} - ${data.filename} (${data.progress}%)`;
+                        } else if (data.status === 'loading language data') {
+                            document.getElementById('progressText').textContent = `언어 데이터 로딩 중... (${data.current}/${data.total})`;
+                        }
+                        break;
 
-                case 'TASK_STOPPED':
-                    const stoppedTask = currentTasks.get(taskId);
-                    if (stoppedTask) {
-                        stoppedTask.reject(new Error('Task stopped by user'));
-                        currentTasks.delete(taskId);
-                    }
-                    break;
+                    case 'COMPLETE':
+                        // COMPLETE 메시지는 processImageWithWorker에서 처리
+                        // 전역 핸들러에서는 무시 (중복 방지)
+                        break;
 
-                case 'ERROR':
-                    const errorTask = currentTasks.get(taskId);
-                    if (errorTask) {
-                        errorTask.reject(new Error(event.data.error || 'OCR processing failed'));
-                        currentTasks.delete(taskId);
-                    }
-                    break;
-            }
+                    case 'ERROR':
+                        console.error('[Worker] OCR 에러:', data.error);
+                        break;
+                }
+            });
+
+            ocrWorker.addEventListener('error', (error) => {
+                console.error('[Worker] 에러:', error);
+            });
+
+        } catch (error) {
+            console.error('❌ Web Worker 초기화 실패:', error);
         }
 
         // 언어 선택
@@ -719,12 +680,31 @@
         document.getElementById('stopBtn').addEventListener('click', () => {
             console.log('[Main] 작업 중단 요청');
 
-            // Service Worker에 중단 메시지 전송
-            if (useServiceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'STOP_ALL_TASKS'
+            // Web Worker 종료 및 재시작
+            if (ocrWorker) {
+                ocrWorker.terminate();
+                console.log('[Main] Web Worker 종료');
+
+                // Worker 재초기화
+                ocrWorker = new Worker('ocr-worker.js');
+                ocrWorker.addEventListener('message', (event) => {
+                    const { type, data } = event.data;
+                    switch (type) {
+                        case 'OCR_PROGRESS':
+                            if (data.progress) {
+                                document.getElementById('progressFill').style.width = data.progress + '%';
+                                document.getElementById('progressText').textContent = `처리 중: ${data.current}/${data.total} - ${data.filename} (${data.progress}%)`;
+                            } else if (data.status === 'loading language data') {
+                                document.getElementById('progressText').textContent = `언어 데이터 로딩 중... (${data.current}/${data.total})`;
+                            }
+                            break;
+                        case 'COMPLETE':
+                            break;
+                        case 'ERROR':
+                            console.error('[Worker] OCR 에러:', data.error);
+                            break;
+                    }
                 });
-                console.log('[Main] Service Worker에 중단 요청 전송');
             }
 
             // 대기 중인 모든 Promise reject
@@ -968,10 +948,10 @@
                             throw new Error('PDF 페이지 로드 실패');
                         }
                     } else {
-                        // 이미지: Service Worker 사용 (가능한 경우)
-                        if (useServiceWorker && navigator.serviceWorker.controller) {
-                            console.log('🔧 Service Worker로 이미지 처리:', file.name);
-                            text = await processImageWithServiceWorker(file, fileNum, totalFiles);
+                        // 이미지: Web Worker 사용
+                        if (ocrWorker) {
+                            console.log('🔧 Web Worker로 이미지 처리:', file.name);
+                            text = await processImageWithWorker(file, fileNum, totalFiles);
                         } else {
                             console.log('⚠️ 기본 방식으로 이미지 처리:', file.name);
                             text = await processImage(file, fileNum, totalFiles);
@@ -1003,22 +983,31 @@
             window.BaalUtils.showToast(`${uploadedFiles.length}개 파일 텍스트 추출 완료!`, 'success', 5000);
         });
 
-        // Service Worker로 이미지 처리
-        async function processImageWithServiceWorker(file, fileNum, totalFiles) {
+        // Web Worker로 이미지 처리
+        async function processImageWithWorker(file, fileNum, totalFiles) {
             return new Promise(async (resolve, reject) => {
-                const taskId = `task-${taskIdCounter++}`;
-
                 try {
                     // ArrayBuffer 변환
                     const arrayBuffer = await file.arrayBuffer();
 
-                    // Task 등록
-                    currentTasks.set(taskId, { resolve, reject, filename: file.name });
+                    // Worker 메시지 핸들러 (일회성)
+                    const handleMessage = (event) => {
+                        const { type, data } = event.data;
 
-                    // Service Worker에 전송
-                    navigator.serviceWorker.controller.postMessage({
+                        if (type === 'COMPLETE') {
+                            ocrWorker.removeEventListener('message', handleMessage);
+                            resolve(data.text);
+                        } else if (type === 'ERROR') {
+                            ocrWorker.removeEventListener('message', handleMessage);
+                            reject(new Error(data.error || 'OCR processing failed'));
+                        }
+                    };
+
+                    ocrWorker.addEventListener('message', handleMessage);
+
+                    // Web Worker에 전송
+                    ocrWorker.postMessage({
                         type: 'PROCESS_IMAGE',
-                        taskId: taskId,
                         data: {
                             imageData: {
                                 buffer: arrayBuffer,
@@ -1031,10 +1020,9 @@
                         }
                     });
 
-                    console.log(`[Main] Service Worker에 전송: ${file.name} (task ${taskId})`);
+                    console.log(`[Main] Web Worker에 전송: ${file.name}`);
 
                 } catch (error) {
-                    currentTasks.delete(taskId);
                     reject(error);
                 }
             });
@@ -1054,9 +1042,9 @@
                 try {
                     let pageText = '';
 
-                    // Service Worker 사용 가능한 경우
-                    if (useServiceWorker && navigator.serviceWorker.controller) {
-                        pageText = await processPageWithServiceWorker(page, pageNum, pdfPages.length);
+                    // Web Worker 사용
+                    if (ocrWorker) {
+                        pageText = await processPageWithWorker(page, pageNum, pdfPages.length);
                     } else {
                         // 기본 방식
                         pageText = await processPageDirectly(page.blob);
@@ -1075,22 +1063,31 @@
             return fullText.trim();
         }
 
-        // PDF 페이지를 Service Worker로 처리
-        async function processPageWithServiceWorker(page, pageNum, totalPages) {
+        // PDF 페이지를 Web Worker로 처리
+        async function processPageWithWorker(page, pageNum, totalPages) {
             return new Promise(async (resolve, reject) => {
-                const taskId = `task-${taskIdCounter++}`;
-
                 try {
                     // Blob을 ArrayBuffer로 변환
                     const arrayBuffer = await page.blob.arrayBuffer();
 
-                    // Task 등록
-                    currentTasks.set(taskId, { resolve, reject, filename: `Page ${pageNum}` });
+                    // Worker 메시지 핸들러 (일회성)
+                    const handleMessage = (event) => {
+                        const { type, data } = event.data;
 
-                    // Service Worker에 전송
-                    navigator.serviceWorker.controller.postMessage({
+                        if (type === 'COMPLETE') {
+                            ocrWorker.removeEventListener('message', handleMessage);
+                            resolve(data.text);
+                        } else if (type === 'ERROR') {
+                            ocrWorker.removeEventListener('message', handleMessage);
+                            reject(new Error(data.error || 'OCR processing failed'));
+                        }
+                    };
+
+                    ocrWorker.addEventListener('message', handleMessage);
+
+                    // Web Worker에 전송
+                    ocrWorker.postMessage({
                         type: 'PROCESS_IMAGE',
-                        taskId: taskId,
                         data: {
                             imageData: {
                                 buffer: arrayBuffer,
@@ -1104,13 +1101,12 @@
                     });
 
                 } catch (error) {
-                    currentTasks.delete(taskId);
                     reject(error);
                 }
             });
         }
 
-        // PDF 페이지를 직접 처리 (Service Worker 미사용 시)
+        // PDF 페이지를 직접 처리 (Web Worker 미사용 시)
         async function processPageDirectly(blob) {
             const { data } = await Tesseract.recognize(
                 blob,
@@ -1272,6 +1268,41 @@
             const blob = new Blob([allText], { type: 'text/plain;charset=utf-8' });
             window.BaalUtils.downloadFile(blob, 'extracted-text.txt');
             window.BaalUtils.showToast('TXT 다운로드 완료!', 'success', 5000);
+        });
+
+        // 초기화 버튼
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            // 확인 대화상자
+            if (!confirm('모든 파일과 결과를 초기화하시겠습니까?')) {
+                return;
+            }
+
+            // 업로드된 파일 초기화
+            uploadedFiles = [];
+            extractedTexts = [];
+            pdfPages = [];
+            currentPageIndex = 0;
+
+            // UI 초기화
+            document.getElementById('fileListSection').style.display = 'none';
+            document.getElementById('previewContainer').innerHTML = '<p class="preview-placeholder">파일을 업로드하고 시작 버튼을 눌러주세요</p>';
+            document.getElementById('pdfNavigation').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+
+            window.BaalUtils.showToast('초기화 완료! 새로운 파일을 업로드해주세요.', 'success', 5000);
+        });
+
+        // 초기화 버튼 호버 효과
+        const resetBtn = document.getElementById('resetBtn');
+        resetBtn.addEventListener('mouseenter', () => {
+            resetBtn.style.background = '#bb2d3b';
+            resetBtn.style.transform = 'scale(1.05)';
+        });
+        resetBtn.addEventListener('mouseleave', () => {
+            resetBtn.style.background = '#dc3545';
+            resetBtn.style.transform = 'scale(1)';
         });
     </script>
 </body>
