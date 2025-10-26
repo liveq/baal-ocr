@@ -288,10 +288,10 @@
         </header>
 
         <main>
-            <!-- 1️⃣ 언어 선택 -->
+            <!-- 🌐 언어 선택 -->
             <div class="language-section">
                 <label class="language-label">
-                    <span data-ko="1️⃣ 인식 언어 선택" data-en="1️⃣ Select Recognition Language">1️⃣ 인식 언어 선택</span>
+                    <span data-ko="🌐 인식 언어 선택" data-en="🌐 Select Recognition Language">🌐 인식 언어 선택</span>
                 </label>
                 <div class="language-grid">
                     <button class="language-btn active" data-lang="kor+eng" data-ko="한글+영어" data-en="Korean+English">한글+영어</button>
@@ -305,10 +305,10 @@
                 </div>
             </div>
 
-            <!-- 2️⃣ 이미지 업로드 -->
+            <!-- 📤 이미지 업로드 -->
             <div class="dropzone" id="dropzone">
                 <p>
-                    <span data-ko="2️⃣ 이미지를 드래그하거나 클릭하여 업로드" data-en="2️⃣ Drag & drop image or click to upload">2️⃣ 이미지를 드래그하거나 클릭하여 업로드</span>
+                    <span data-ko="📤 이미지를 드래그하거나 클릭하여 업로드" data-en="📤 Drag & drop image or click to upload">📤 이미지를 드래그하거나 클릭하여 업로드</span>
                 </p>
                 <input type="file" id="fileInput" accept="image/*" style="display: none;">
             </div>
@@ -326,10 +326,10 @@
                 <p class="progress-text" id="progressText">처리 중...</p>
             </div>
 
-            <!-- 3️⃣ 추출된 텍스트 -->
+            <!-- 📝 추출된 텍스트 -->
             <div class="result-section" id="resultSection">
                 <label class="result-label">
-                    <span data-ko="3️⃣ 추출된 텍스트" data-en="3️⃣ Extracted Text">3️⃣ 추출된 텍스트</span>
+                    <span data-ko="📝 추출된 텍스트" data-en="📝 Extracted Text">📝 추출된 텍스트</span>
                 </label>
                 <textarea id="resultText" class="result-text" readonly></textarea>
                 <div class="result-stats" id="resultStats"></div>
@@ -361,6 +361,9 @@
     <!-- 공통 스크립트 -->
     <script src="_common/common.js"></script>
     <script>
+        // 페이지 로드 시 스크롤 맨 위로
+        window.scrollTo(0, 0);
+
         let selectedLang = 'kor+eng';
         let extractedText = '';
 
@@ -389,7 +392,10 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const container = document.getElementById('previewContainer');
-                document.getElementById('placeholder').style.display = 'none';
+                const placeholder = document.getElementById('placeholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
                 container.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
             };
             reader.readAsDataURL(file);

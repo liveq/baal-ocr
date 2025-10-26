@@ -249,15 +249,21 @@ body.dark-mode .icon-light {
 }
 
 .lang-toggle button {
-    padding: 10px 16px;
+    width: 50px;
+    height: 50px;
+    padding: 0;
     background: var(--bg-secondary);
     border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-md);
+    border-radius: 50%;
     color: var(--text-primary);
     font-weight: 600;
+    font-size: 0.75em;
     cursor: pointer;
     box-shadow: var(--shadow-sm);
     transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .lang-toggle button:hover {
