@@ -418,6 +418,8 @@
         let selectedLang = 'kor+eng';
         let uploadedFiles = [];
         let extractedTexts = [];
+        let pdfPages = []; // PDF 페이지 이미지 저장
+        let currentPageIndex = -1; // 현재 보고 있는 PDF 페이지
 
         // Web Worker 초기화
         let ocrWorker = null;
@@ -719,6 +721,9 @@
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             let fullText = '';
 
+            // PDF 페이지 이미지 초기화
+            pdfPages = [];
+
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 document.getElementById('progressText').textContent = `PDF 처리 중: ${fileNum}/${totalFiles} - 페이지 ${pageNum}/${pdf.numPages}`;
 
@@ -731,6 +736,14 @@
                 canvas.height = viewport.height;
 
                 await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                // Canvas를 JPEG로 변환하여 저장
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                pdfPages.push({
+                    pageNum: pageNum,
+                    dataUrl: dataUrl,
+                    canvas: canvas
+                });
 
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
@@ -748,6 +761,12 @@
                 );
 
                 fullText += `\n\n=== 페이지 ${pageNum} ===\n\n${data.text}`;
+            }
+
+            // PDF 네비게이션 표시
+            if (pdfPages.length > 0) {
+                showPDFNavigation();
+                showPDFPage(0);
             }
 
             return fullText.trim();
