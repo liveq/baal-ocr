@@ -75,10 +75,12 @@ async function processImage(event, data, taskId) {
         const blob = new Blob([imageData.buffer], { type: imageData.type });
 
         // Tesseract로 OCR 처리
+        // Service Worker에서는 workerPath를 'blob'으로 설정하여 내부 Worker 생성 방지
         const { data: result } = await Tesseract.recognize(
             blob,
             language,
             {
+                workerPath: 'blob',
                 logger: (m) => {
                     // 작업이 중단되었는지 확인
                     if (abortController.signal.aborted) {
