@@ -343,8 +343,8 @@
 
             <!-- PDF 페이지 썸네일 네비게이션 -->
             <div id="pdfNavigation" style="display: none; margin-top: 15px;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                    <!-- 좌우 네비게이션 그룹 (가깝게) -->
+                <!-- 네비게이션 버튼 (중앙 정렬) -->
+                <div style="display: flex; justify-content: center; margin-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-secondary); padding: 4px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
                         <button id="prevPageBtn" class="nav-btn" style="padding: 8px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s;">
                             <span data-ko="←" data-en="←">←</span>
@@ -354,25 +354,9 @@
                             <span data-ko="→" data-en="→">→</span>
                         </button>
                     </div>
-
-                    <!-- 다운로드 버튼 그룹 -->
-                    <div style="position: relative; margin-left: auto;">
-                        <button id="downloadPageBtn" class="btn-download" style="padding: 8px 16px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                            <span data-ko="📥 이미지 저장" data-en="📥 Save Image">📥 이미지 저장</span>
-                        </button>
-                        <!-- 호버 시 표시되는 옵션 메뉴 -->
-                        <div id="downloadOptions" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 140px;">
-                            <button id="downloadCurrentBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; border-bottom: 1px solid var(--border-color); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;">
-                                <span data-ko="📄 개별 저장" data-en="📄 Current">📄 개별 저장</span>
-                            </button>
-                            <button id="downloadAllBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);">
-                                <span data-ko="📚 전체 저장" data-en="📚 All Pages">📚 전체 저장</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
                 <!-- 썸네일 리스트 -->
-                <div id="thumbnailList" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; background: var(--bg-secondary); border-radius: var(--border-radius-md); padding: 10px;"></div>
+                <div id="thumbnailList" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; background: var(--bg-secondary); border-radius: var(--border-radius-md); padding: 10px; scroll-behavior: smooth;"></div>
             </div>
 
             <!-- 진행률 -->
@@ -398,9 +382,24 @@
                 <textarea id="resultText" class="result-text" readonly></textarea>
                 <div class="result-stats" id="resultStats"></div>
                 <div class="result-buttons" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
                         <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
                         <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
+                        <!-- 이미지 저장 버튼 (PDF 페이지용) -->
+                        <div id="pdfDownloadBtnContainer" style="position: relative; display: none;">
+                            <button id="downloadPageBtn" class="btn-download" style="padding: 12px 20px; background: var(--gold-gradient); color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                <span data-ko="📥 이미지 저장" data-en="📥 Save Image">📥 이미지 저장</span>
+                            </button>
+                            <!-- 호버 시 표시되는 옵션 메뉴 -->
+                            <div id="downloadOptions" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 140px;">
+                                <button id="downloadCurrentBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; border-bottom: 1px solid var(--border-color); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;">
+                                    <span data-ko="📄 개별 저장" data-en="📄 Current">📄 개별 저장</span>
+                                </button>
+                                <button id="downloadAllBtn" style="width: 100%; padding: 10px 16px; background: white; color: var(--text-primary); border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);">
+                                    <span data-ko="📚 전체 저장" data-en="📚 All Pages">📚 전체 저장</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <button class="btn-reset" id="resetBtn" style="padding: 12px 20px; background: #dc3545; color: white; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 600; transition: all 0.2s;">
                         <span data-ko="🔄 처음부터" data-en="🔄 Reset">🔄 처음부터</span>
@@ -827,6 +826,15 @@
             container.innerHTML = `<img src="${page.dataUrl}" alt="Page ${page.pageNum}" style="max-width: 100%; border-radius: var(--border-radius-md);">`;
 
             updatePDFNavigation();
+
+            // 이미지 저장 버튼 표시
+            const downloadContainer = document.getElementById('pdfDownloadBtnContainer');
+            if (downloadContainer) {
+                downloadContainer.style.display = 'block';
+            }
+
+            // 추출된 텍스트로 스크롤
+            scrollToPageText(pageIndex);
         }
 
         // PDF 네비게이션 업데이트
@@ -848,6 +856,7 @@
 
             pdfPages.forEach((page, index) => {
                 const thumbnail = document.createElement('div');
+                thumbnail.setAttribute('data-page-index', index);
                 thumbnail.style.cssText = `
                     position: relative;
                     cursor: pointer;
@@ -882,6 +891,9 @@
 
                 thumbnailList.appendChild(thumbnail);
             });
+
+            // 선택된 썸네일을 중앙으로 스크롤
+            scrollThumbnailToCenter(currentPageIndex);
         }
 
         function displayFileList() {
@@ -1270,6 +1282,57 @@
             window.BaalUtils.showToast('TXT 다운로드 완료!', 'success', 5000);
         });
 
+        // 썸네일 클릭 시 해당 페이지 텍스트로 스크롤
+        function scrollToPageText(pageIndex) {
+            const resultText = document.getElementById('resultText');
+            if (!resultText || !resultText.value) return;
+
+            const pageNum = pageIndex + 1;
+            const pageMarker = `=== 페이지 ${pageNum} ===`;
+            const textValue = resultText.value;
+            const markerIndex = textValue.indexOf(pageMarker);
+
+            if (markerIndex !== -1) {
+                // textarea에서 해당 위치로 스크롤
+                const beforeText = textValue.substring(0, markerIndex);
+                const lineNumber = beforeText.split('\n').length;
+                const lineHeight = 20; // 대략적인 라인 높이
+                const scrollPosition = (lineNumber - 1) * lineHeight;
+
+                resultText.scrollTop = scrollPosition;
+
+                // 잠깐 하이라이트 효과 (선택)
+                const endIndex = textValue.indexOf('\n\n', markerIndex);
+                if (endIndex !== -1) {
+                    resultText.setSelectionRange(markerIndex, endIndex);
+                    setTimeout(() => {
+                        resultText.setSelectionRange(markerIndex, markerIndex);
+                    }, 1000);
+                }
+            }
+        }
+
+        // 선택된 썸네일을 중앙으로 스크롤
+        function scrollThumbnailToCenter(pageIndex) {
+            const thumbnailList = document.getElementById('thumbnailList');
+            const thumbnail = thumbnailList.querySelector(`[data-page-index="${pageIndex}"]`);
+
+            if (thumbnail && thumbnailList) {
+                // 썸네일의 위치 계산
+                const thumbnailLeft = thumbnail.offsetLeft;
+                const thumbnailWidth = thumbnail.offsetWidth;
+                const listWidth = thumbnailList.offsetWidth;
+
+                // 중앙으로 스크롤할 위치 계산
+                const scrollPosition = thumbnailLeft - (listWidth / 2) + (thumbnailWidth / 2);
+
+                thumbnailList.scrollTo({
+                    left: scrollPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
         // 초기화 버튼
         document.getElementById('resetBtn').addEventListener('click', () => {
             // 확인 대화상자
@@ -1290,6 +1353,12 @@
             document.getElementById('resultSection').style.display = 'none';
             document.getElementById('placeholder').style.display = 'block';
             document.getElementById('fileInput').value = '';
+
+            // PDF 다운로드 버튼 숨김
+            const pdfDownloadContainer = document.getElementById('pdfDownloadBtnContainer');
+            if (pdfDownloadContainer) {
+                pdfDownloadContainer.style.display = 'none';
+            }
 
             window.BaalUtils.showToast('초기화 완료! 새로운 파일을 업로드해주세요.', 'success', 5000);
         });
