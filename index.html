@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="무료 OCR 텍스트 추출 도구. 이미지에서 텍스트를 자동으로 인식합니다. 한글, 영어, 일본어, 중국어 등 90+ 언어 지원.">
+    <meta name="keywords" content="OCR, 텍스트 추출, 이미지 텍스트 인식, 한글 OCR, 무료 OCR, Tesseract">
+    <meta name="author" content="BAAL">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ocr.baal.co.kr/">
+    <meta property="og:title" content="OCR 텍스트 추출 - 무료 온라인 도구">
+    <meta property="og:description" content="이미지에서 텍스트를 자동으로 인식합니다. 90+ 언어 지원.">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://ocr.baal.co.kr/">
+    <meta property="twitter:title" content="OCR 텍스트 추출 - 무료 온라인 도구">
+    <meta property="twitter:description" content="AI OCR 도구. 한글, 영어, 일본어, 중국어 지원.">
+
+    <title>OCR 텍스트 추출 - BAAL</title>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2886185075996969"
+     crossorigin="anonymous"></script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Tesseract.js -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5"></script>
+
+    <!-- 공통 스타일 -->
+    <link rel="stylesheet" href="_common/common.css">
+    <style>
+        /* 언어 선택 */
+        .language-section {
+            background: var(--bg-accent);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .language-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .language-btn {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .language-btn:hover {
+            border-color: var(--gold-primary);
+            background: var(--bg-accent);
+        }
+
+        .language-btn.active {
+            background: var(--gold-gradient);
+            color: white;
+            border-color: var(--gold-primary);
+        }
+
+        /* 진행률 */
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-gradient);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* 결과 영역 */
+        .result-section {
+            background: var(--bg-accent);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 25px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .result-text {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .result-stats {
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* 버튼 */
+        .btn-process {
+            padding: 16px 48px;
+            background: var(--gold-gradient);
+            color: white;
+            border: 2px solid var(--gold-primary);
+            border-radius: var(--border-radius-md);
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn-process:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-process:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-copy {
+            padding: 12px 24px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            border-color: var(--gold-primary);
+            background: var(--bg-accent);
+        }
+
+        .btn-download {
+            padding: 12px 24px;
+            background: var(--gold-gradient);
+            color: white;
+            border: 2px solid var(--gold-primary);
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* 이미지 미리보기 */
+        .preview-container {
+            background: var(--bg-accent);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 30px;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .preview-placeholder {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .language-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .result-buttons {
+                flex-direction: column;
+            }
+
+            .btn-copy,
+            .btn-download {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 다크모드 토글 -->
+    <div class="theme-toggle">
+        <button id="themeToggle" aria-label="다크모드 전환">
+            <span class="icon-light">☀️</span>
+            <span class="icon-dark">🌙</span>
+        </button>
+    </div>
+
+    <!-- 언어 전환 & 도구 버튼 -->
+    <div class="lang-toggle">
+        <button id="langToggle" data-lang="ko">
+            <span class="lang-ko">EN</span>
+            <span class="lang-en">KO</span>
+        </button>
+        <button id="toolsToggle">
+            <span class="tooltip" data-ko="더 많은 도구" data-en="More Tools">더 많은 도구</span>
+            🧰
+        </button>
+    </div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <header>
+            <h1 data-ko="OCR 텍스트 추출" data-en="OCR Text Extraction">OCR 텍스트 추출</h1>
+            <p class="subtitle" data-ko="이미지에서 텍스트를 자동으로 인식하고 추출합니다" data-en="Automatically recognize and extract text from images">이미지에서 텍스트를 자동으로 인식하고 추출합니다</p>
+        </header>
+
+        <main>
+            <!-- 1️⃣ 언어 선택 -->
+            <div class="language-section">
+                <label class="language-label">
+                    <span data-ko="1️⃣ 인식 언어 선택" data-en="1️⃣ Select Recognition Language">1️⃣ 인식 언어 선택</span>
+                </label>
+                <div class="language-grid">
+                    <button class="language-btn active" data-lang="kor+eng" data-ko="한글+영어" data-en="Korean+English">한글+영어</button>
+                    <button class="language-btn" data-lang="eng" data-ko="영어" data-en="English">영어</button>
+                    <button class="language-btn" data-lang="jpn" data-ko="일본어" data-en="Japanese">일본어</button>
+                    <button class="language-btn" data-lang="chi_sim" data-ko="중국어 간체" data-en="Chinese Simplified">중국어 간체</button>
+                    <button class="language-btn" data-lang="chi_tra" data-ko="중국어 번체" data-en="Chinese Traditional">중국어 번체</button>
+                    <button class="language-btn" data-lang="fra" data-ko="프랑스어" data-en="French">프랑스어</button>
+                    <button class="language-btn" data-lang="deu" data-ko="독일어" data-en="German">독일어</button>
+                    <button class="language-btn" data-lang="spa" data-ko="스페인어" data-en="Spanish">스페인어</button>
+                </div>
+            </div>
+
+            <!-- 2️⃣ 이미지 업로드 -->
+            <div class="dropzone" id="dropzone">
+                <p>
+                    <span data-ko="2️⃣ 이미지를 드래그하거나 클릭하여 업로드" data-en="2️⃣ Drag & drop image or click to upload">2️⃣ 이미지를 드래그하거나 클릭하여 업로드</span>
+                </p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- 이미지 미리보기 -->
+            <div class="preview-container" id="previewContainer">
+                <p class="preview-placeholder" id="placeholder" data-ko="이미지를 업로드하면 자동으로 텍스트를 인식합니다" data-en="Upload an image to automatically recognize text">이미지를 업로드하면 자동으로 텍스트를 인식합니다</p>
+            </div>
+
+            <!-- 진행률 -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">처리 중...</p>
+            </div>
+
+            <!-- 3️⃣ 추출된 텍스트 -->
+            <div class="result-section" id="resultSection">
+                <label class="result-label">
+                    <span data-ko="3️⃣ 추출된 텍스트" data-en="3️⃣ Extracted Text">3️⃣ 추출된 텍스트</span>
+                </label>
+                <textarea id="resultText" class="result-text" readonly></textarea>
+                <div class="result-stats" id="resultStats"></div>
+                <div class="result-buttons">
+                    <button class="btn-copy" id="copyBtn" data-ko="텍스트 복사" data-en="Copy Text">텍스트 복사</button>
+                    <button class="btn-download" id="downloadBtn" data-ko="TXT 다운로드" data-en="Download TXT">TXT 다운로드</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <p class="footer-brand">
+                    Made by <a href="https://baal.co.kr" target="_blank">BAAL</a>
+                </p>
+                <p class="footer-contact">
+                    <a href="mailto:baal.contract@gmail.com">baal.contract@gmail.com</a>
+                </p>
+                <p class="footer-links">
+                    <a href="https://baal.co.kr/privacy" target="_blank" data-ko="개인정보처리방침" data-en="Privacy Policy">개인정보처리방침</a>
+                    <span class="separator">|</span>
+                    <a href="https://baal.co.kr/terms" target="_blank" data-ko="이용약관" data-en="Terms of Service">이용약관</a>
+                </p>
+                <p class="footer-copyright">&copy; 2025 BAAL. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 공통 스크립트 -->
+    <script src="_common/common.js"></script>
+    <script>
+        let selectedLang = 'kor+eng';
+        let extractedText = '';
+
+        // 언어 선택
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedLang = btn.dataset.lang;
+                document.querySelectorAll('.language-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // 파일 업로드
+        window.BaalUtils.initDropzone('dropzone', 'fileInput', handleFile, {
+            accept: 'image/*',
+            maxFiles: 1,
+            maxSize: 10 * 1024 * 1024
+        });
+
+        async function handleFile(files) {
+            if (files.length === 0) return;
+
+            const file = files[0];
+
+            // 이미지 미리보기
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const container = document.getElementById('previewContainer');
+                document.getElementById('placeholder').style.display = 'none';
+                container.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+
+            // OCR 처리 시작
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+
+            try {
+                const { data } = await Tesseract.recognize(
+                    file,
+                    selectedLang,
+                    {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                const progress = Math.round(m.progress * 100);
+                                document.getElementById('progressFill').style.width = progress + '%';
+                                document.getElementById('progressText').textContent = `텍스트 인식 중... ${progress}%`;
+                            } else if (m.status === 'loading language traineddata') {
+                                document.getElementById('progressText').textContent = '언어 데이터 로딩 중...';
+                            } else if (m.status === 'initializing tesseract') {
+                                document.getElementById('progressText').textContent = 'Tesseract 초기화 중...';
+                            } else if (m.status === 'initialized tesseract') {
+                                document.getElementById('progressText').textContent = '준비 완료. 인식 시작...';
+                            }
+                        }
+                    }
+                );
+
+                extractedText = data.text;
+
+                // 진행률 숨김
+                document.getElementById('progressContainer').style.display = 'none';
+
+                // 결과 표시
+                displayResult(extractedText, data);
+
+                window.BaalUtils.showToast('텍스트 추출 완료!', 'success', 5000);
+
+            } catch (error) {
+                console.error('OCR error:', error);
+                document.getElementById('progressContainer').style.display = 'none';
+                window.BaalUtils.showToast('텍스트 추출 실패: ' + error.message, 'error', 5000);
+            }
+        }
+
+        function displayResult(text, data) {
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultText').value = text;
+
+            // 통계 정보
+            const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const charCount = text.length;
+            const lineCount = text.split('\n').length;
+            const confidence = Math.round(data.confidence);
+
+            const currentLang = document.body.getAttribute('data-lang') || 'ko';
+            const statsText = currentLang === 'ko'
+                ? `단어: ${wordCount}개 | 문자: ${charCount}개 | 줄: ${lineCount}개 | 정확도: ${confidence}%`
+                : `Words: ${wordCount} | Characters: ${charCount} | Lines: ${lineCount} | Confidence: ${confidence}%`;
+
+            document.getElementById('resultStats').textContent = statsText;
+
+            // 스크롤
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 텍스트 복사
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const textArea = document.getElementById('resultText');
+            textArea.select();
+            document.execCommand('copy');
+            window.BaalUtils.showToast('텍스트가 복사되었습니다!', 'success', 5000);
+        });
+
+        // TXT 다운로드
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const blob = new Blob([extractedText], { type: 'text/plain;charset=utf-8' });
+            window.BaalUtils.downloadFile(blob, 'extracted-text.txt');
+            window.BaalUtils.showToast('TXT 다운로드 완료!', 'success', 5000);
+        });
+    </script>
+</body>
+</html>

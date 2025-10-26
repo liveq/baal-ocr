@@ -312,6 +312,77 @@ const detectBrowserLanguage = () => {
     return savedLang;
 };
 
+
+// 도구 버튼 초기화
+const initToolsToggle = () => {
+    const toolsToggle = document.getElementById('toolsToggle');
+
+    if (toolsToggle) {
+        // 툴팁 생성
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltip';
+
+        // 현재 언어에 따라 툴팁 텍스트 설정
+        const updateTooltipText = () => {
+            const currentLang = document.body.getAttribute('data-lang') || 'ko';
+            tooltip.textContent = currentLang === 'ko' ? '더 많은 도구' : 'More Tools';
+        };
+
+        updateTooltipText();
+        toolsToggle.appendChild(tooltip);
+
+        // 클릭 이벤트
+        toolsToggle.addEventListener('click', () => {
+            window.open('https://baal.co.kr', '_blank');
+        });
+
+        // 언어 변경 시 툴팁 업데이트
+        const langToggle = document.getElementById('langToggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', () => {
+                setTimeout(updateTooltipText, 0);
+            });
+        }
+    }
+};
+
+// 푸터 BAAL 링크 툴팁 초기화
+const initFooterTooltip = () => {
+    const footerLink = document.querySelector('.footer-brand a');
+
+    if (footerLink) {
+        // 툴팁 생성
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltip';
+
+        // 현재 언어에 따라 툴팁 텍스트 설정
+        const updateTooltipText = () => {
+            const currentLang = document.body.getAttribute('data-lang') || 'ko';
+            tooltip.textContent = currentLang === 'ko' ? '더 많은 도구' : 'More Tools';
+        };
+
+        updateTooltipText();
+        footerLink.appendChild(tooltip);
+
+        // 마우스 호버 이벤트
+        footerLink.addEventListener('mouseenter', () => {
+            tooltip.classList.add('show');
+        });
+
+        footerLink.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('show');
+        });
+
+        // 언어 변경 시 툴팁 업데이트
+        const langToggle = document.getElementById('langToggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', () => {
+                setTimeout(updateTooltipText, 0);
+            });
+        }
+    }
+};
+
 // DOM이 로드되면 초기화
 document.addEventListener('DOMContentLoaded', () => {
     // 브라우저 언어 자동 감지
@@ -319,6 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initThemeToggle();
     initLangToggle();
+    initToolsToggle();
+    initFooterTooltip();
 });
 
 // 전역 유틸리티 함수 export

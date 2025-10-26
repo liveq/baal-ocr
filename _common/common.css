@@ -269,6 +269,78 @@ body[data-lang="en"] .lang-ko {
     display: none;
 }
 
+/* 도구 버튼 */
+.tools-toggle {
+    position: fixed;
+    top: 140px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.tools-toggle button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.tools-toggle button:hover {
+    transform: scale(1.1);
+}
+
+/* 툴팁 스타일 */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10001;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+.tools-toggle button:hover .tooltip {
+    opacity: 1;
+}
+
+.tools-toggle .tooltip {
+    right: 100%;              /* 왼쪽에 배치 */
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 10px;
+}
+
+/* 푸터 링크 툴팁 */
+.footer-brand a {
+    position: relative;
+}
+
+.footer-brand a .tooltip {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+}
+
+
 /* 카드 스타일 */
 .card {
     background: var(--bg-secondary);
@@ -335,7 +407,8 @@ input:focus, textarea:focus, select:focus {
         font-size: 1em;
     }
 
-    .theme-toggle, .lang-toggle {
+
+    .theme-toggle, .lang-toggle, .tools-toggle {
         right: 10px;
     }
 
@@ -345,5 +418,9 @@ input:focus, textarea:focus, select:focus {
 
     .lang-toggle {
         top: 70px;
+    }
+
+    .tools-toggle {
+        top: 130px;
     }
 }
