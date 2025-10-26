@@ -757,6 +757,7 @@
             // 개별 파일 탭 생성 (2개 이상일 때만)
             const tabsDiv = document.getElementById('resultTabs');
             tabsDiv.innerHTML = '';
+            tabsDiv.style.display = 'none'; // 기본적으로 숨김
 
             if (extractedTexts.length > 1) {
                 // 전체 보기 버튼
@@ -779,11 +780,8 @@
                     tabsDiv.appendChild(btn);
                 });
 
-                // 탭이 있을 때만 flex로 표시
+                // 2개 이상일 때만 탭 표시
                 tabsDiv.style.display = 'flex';
-            } else {
-                // 1개 이하일 때는 숨김
-                tabsDiv.style.display = 'none';
             }
 
             // 전체 텍스트 표시
