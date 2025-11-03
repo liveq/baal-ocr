@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ocr.baal.co.kr/sitemap.xml
+Crawl-delay: 1
